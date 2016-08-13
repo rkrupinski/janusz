@@ -24,24 +24,6 @@ class pms {
 
     states.set(this, constants.PENDING);
 
-    const resolve = val => {
-      if (states.get(this) !== constants.PENDING) {
-        return;
-      }
-
-      if (val === this) {
-        throw new TypeError('Nope');
-      }
-
-      states.set(this, constants.FULFILLED);
-      values.set(this, val);
-
-      setTimeout(() => {
-        callbacks.get(this).success.forEach(cb => cb(val));
-        callbacks.delete(this);
-      });
-    };
-
     const reject = reason => {
       if (states.get(this) !== constants.PENDING) {
         return;
@@ -54,6 +36,43 @@ class pms {
         callbacks.get(this).error.forEach(cb => cb(reason));
         callbacks.delete(this);
       });
+    };
+
+    const resolve = val => {
+      if (states.get(this) !== constants.PENDING) {
+        return;
+      }
+
+      if (val === this) {
+        throw new TypeError('Nope');
+      }
+
+      if (
+          (typeof val === 'object' || typeof val === 'function') &&
+          typeof val.then === 'function'
+      ) {
+        switch (true) {
+          case states.get(val) === constants.FULFILLED && values.has(val):
+            resolve(values.get(val));
+            break;
+          case states.get(val) === constants.REJECTED && values.has(val):
+            reject(values.get(val))
+            break;
+          default:
+            val.then(
+              val => resolve(val),
+              reason => reject(reason)
+            );
+        }
+      } else {
+        states.set(this, constants.FULFILLED);
+        values.set(this, val);
+
+        setTimeout(() => {
+          callbacks.get(this).success.forEach(cb => cb(val));
+          callbacks.delete(this);
+        });
+      }
     };
 
     try {
