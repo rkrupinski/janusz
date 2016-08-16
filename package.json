@@ -15,6 +15,7 @@
   "devDependencies": {
     "eslint": "^3.3.1",
     "eslint-config-airbnb-base": "^5.0.2",
+    "eslint-plugin-import": "^1.13.0",
     "promises-aplus-tests": "^2.1.2"
   }
 }
