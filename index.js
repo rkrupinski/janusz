@@ -1,5 +1,3 @@
-'use strict';
-
 const constants = require('keymirror')({
   FULFILLED: null,
   PENDING: null,
@@ -12,7 +10,7 @@ const values = new WeakMap();
 
 class pms {
 
-  constructor(executor) {
+  constructor(executor) { // eslint-disable-line consistent-return
     if (typeof executor !== 'function') {
       throw new TypeError('Nope');
     }
@@ -56,13 +54,10 @@ class pms {
             resolve(values.get(val));
             break;
           case states.get(val) === constants.REJECTED && values.has(val):
-            reject(values.get(val))
+            reject(values.get(val));
             break;
           default:
-            val.then(
-              val => resolve(val),
-              reason => reject(reason)
-            );
+            val.then(resolve, reject);
         }
       } else {
         states.set(this, constants.FULFILLED);
@@ -84,35 +79,33 @@ class pms {
 
   then(onFulfilled, onRejected) {
     return new pms((resolve, reject) => {
-      setTimeout(() => {
-        const handle = (cb, fallback) => {
-          if (typeof cb === 'function') {
-            try {
-              resolve(cb(values.get(this)));
-            } catch (err) {
-              reject(err);
-            }
-          } else {
-            fallback(values.get(this));
+      const handle = (cb, fallback) => {
+        if (typeof cb === 'function') {
+          try {
+            resolve(cb(values.get(this)));
+          } catch (err) {
+            reject(err);
           }
-        };
-
-        if (states.get(this) === constants.PENDING) {
-          callbacks.get(this).success.push(() =>
-              handle(onFulfilled, resolve));
-
-          callbacks.get(this).error.push(() =>
-              handle(onRejected, reject));
+        } else {
+          fallback(values.get(this));
         }
+      };
 
-        if (states.get(this) === constants.FULFILLED) {
-          handle(onFulfilled, resolve);
-        }
+      if (states.get(this) === constants.PENDING) {
+        callbacks.get(this).success.push(() =>
+            handle(onFulfilled, resolve));
 
-        if (states.get(this) === constants.REJECTED) {
-          handle(onRejected, reject);
-        }
-      });
+        callbacks.get(this).error.push(() =>
+            handle(onRejected, reject));
+      }
+
+      if (states.get(this) === constants.FULFILLED) {
+        setTimeout(handle, 0, onFulfilled, resolve);
+      }
+
+      if (states.get(this) === constants.REJECTED) {
+        setTimeout(handle, 0, onRejected, reject);
+      }
     });
   }
 

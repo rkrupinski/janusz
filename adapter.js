@@ -1,5 +1,3 @@
-'use strict';
-
 const pms = require('.');
 
 exports.resolved = pms.resolve;

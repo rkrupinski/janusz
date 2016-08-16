@@ -1,0 +1,7 @@
+{
+  "root": true,
+  "rules": {
+    "new-cap": ["error", { "newIsCap": false }]
+  },
+  "extends": "airbnb-base"
+}

@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "test": "promises-aplus-tests adapter.js"
+    "test": "promises-aplus-tests adapter.js",
+    "lint": "eslint ./*.js"
   },
   "keywords": [],
   "author": "Rafał Krupiński",
@@ -12,6 +13,8 @@
     "keymirror": "^0.1.1"
   },
   "devDependencies": {
+    "eslint": "^3.3.1",
+    "eslint-config-airbnb-base": "^5.0.2",
     "promises-aplus-tests": "^2.1.2"
   }
 }
