@@ -5,9 +5,22 @@ const REJECTED = Symbol();
 const callbacks = new WeakMap();
 const states = new WeakMap();
 const values = new WeakMap();
+const called = new WeakMap();
 
 const defaultOnFulfilled = val => val;
 const defaultOnRejected = reason => { throw reason; };
+
+function once(fn) {
+  return function wrapped(...args) {
+    if (called.get(fn)) {
+      return undefined;
+    }
+
+    called.set(fn, true);
+
+    return fn(...args);
+  };
+}
 
 class pms {
 
@@ -65,7 +78,7 @@ class pms {
           (typeof val === 'object' || typeof val === 'function') &&
           typeof (then = val.then) === 'function'
         ) {
-          then.bind(val)(resolve, reject);
+          then.bind(val)(once(resolve.bind(null)), once(reject.bind(null)));
         } else {
           states.set(this, FULFILLED);
           values.set(this, val);
