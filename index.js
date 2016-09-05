@@ -8,6 +8,9 @@ const callbacks = new WeakMap();
 const states = new WeakMap();
 const values = new WeakMap();
 
+const defaultOnFulfilled = val => val;
+const defaultOnRejected = reason => { throw reason; };
+
 class pms {
 
   constructor(executor) { // eslint-disable-line consistent-return
@@ -80,31 +83,27 @@ class pms {
   then(onFulfilled, onRejected) {
     return new pms((resolve, reject) => {
       const handle = (cb, fallback) => {
-        if (typeof cb === 'function') {
-          try {
-            resolve(cb(values.get(this)));
-          } catch (err) {
-            reject(err);
-          }
-        } else {
-          fallback(values.get(this));
+        try {
+          resolve((typeof cb === 'function' ? cb : fallback)(values.get(this)));
+        } catch (err) {
+          reject(err);
         }
       };
 
       if (states.get(this) === constants.PENDING) {
         callbacks.get(this).success.push(() =>
-            handle(onFulfilled, resolve));
+            handle(onFulfilled, defaultOnFulfilled));
 
         callbacks.get(this).error.push(() =>
-            handle(onRejected, reject));
+            handle(onRejected, defaultOnRejected));
       }
 
       if (states.get(this) === constants.FULFILLED) {
-        setTimeout(handle, 0, onFulfilled, resolve);
+        setTimeout(() => handle(onFulfilled, defaultOnFulfilled));
       }
 
       if (states.get(this) === constants.REJECTED) {
-        setTimeout(handle, 0, onRejected, reject);
+        setTimeout(() => handle(onRejected, defaultOnRejected));
       }
     });
   }
@@ -114,7 +113,7 @@ class pms {
   }
 
   static resolve(val) {
-    return new pms(resolve => resolve(val));
+    return val instanceof pms ? val : new pms(resolve => resolve(val));
   }
 
   static reject(reason) {
