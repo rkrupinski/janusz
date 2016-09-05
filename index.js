@@ -5,20 +5,20 @@ const REJECTED = Symbol();
 const callbacks = new WeakMap();
 const states = new WeakMap();
 const values = new WeakMap();
-const called = new WeakMap();
+const settled = new WeakMap();
 
 const defaultOnFulfilled = val => val;
 const defaultOnRejected = reason => { throw reason; };
 
-function once(fn) {
+function settle(cb, thenable) {
   return function wrapped(...args) {
-    if (called.get(fn)) {
+    if (settled.get(thenable)) {
       return undefined;
     }
 
-    called.set(fn, true);
+    settled.set(thenable, true);
 
-    return fn(...args);
+    return cb(...args);
   };
 }
 
@@ -78,7 +78,8 @@ class pms {
           (typeof val === 'object' || typeof val === 'function') &&
           typeof (then = val.then) === 'function'
         ) {
-          then.bind(val)(once(resolve.bind(null)), once(reject.bind(null)));
+          settled.set(val, false);
+          then.bind(val)(settle(resolve, val), settle(reject, val));
         } else {
           states.set(this, FULFILLED);
           values.set(this, val);
