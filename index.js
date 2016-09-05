@@ -48,19 +48,21 @@ class pms {
         throw new TypeError('Nope');
       }
 
-      if (
-          (typeof val === 'object' || typeof val === 'function') &&
-          typeof val.then === 'function'
+      let then;
+
+      if ( // eslint-disable-line no-cond-assign
+        (typeof val === 'object' || typeof val === 'function') &&
+            typeof (then = val.then) === 'function'
       ) {
         switch (true) {
-          case states.get(val) === constants.FULFILLED && values.has(val):
+          case states.get(val) === constants.FULFILLED:
             resolve(values.get(val));
             break;
-          case states.get(val) === constants.REJECTED && values.has(val):
+          case states.get(val) === constants.REJECTED:
             reject(values.get(val));
             break;
           default:
-            val.then(resolve, reject);
+            then.bind(val)(resolve, reject);
         }
       } else {
         states.set(this, constants.FULFILLED);
