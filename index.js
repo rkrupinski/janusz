@@ -78,7 +78,7 @@ class pms {
           (typeof val === 'object' || typeof val === 'function') &&
           typeof (then = val.then) === 'function'
         ) {
-          settled.set(val, false);
+          settled.delete(val);
           then.bind(val)(settle(resolve, val), settle(reject, val));
         } else {
           states.set(this, FULFILLED);
