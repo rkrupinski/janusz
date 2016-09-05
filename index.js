@@ -1,8 +1,6 @@
-const constants = require('keymirror')({
-  FULFILLED: null,
-  PENDING: null,
-  REJECTED: null,
-});
+const FULFILLED = Symbol();
+const PENDING = Symbol();
+const REJECTED = Symbol();
 
 const callbacks = new WeakMap();
 const states = new WeakMap();
@@ -23,14 +21,14 @@ class pms {
       error: [],
     });
 
-    states.set(this, constants.PENDING);
+    states.set(this, PENDING);
 
     const reject = reason => {
-      if (states.get(this) !== constants.PENDING) {
+      if (states.get(this) !== PENDING) {
         return;
       }
 
-      states.set(this, constants.REJECTED);
+      states.set(this, REJECTED);
       values.set(this, reason);
 
       setTimeout(() => {
@@ -40,7 +38,7 @@ class pms {
     };
 
     const resolve = val => {
-      if (states.get(this) !== constants.PENDING) {
+      if (states.get(this) !== PENDING) {
         return;
       }
 
@@ -50,23 +48,29 @@ class pms {
 
       let then;
 
-      if ( // eslint-disable-line no-cond-assign
+      if (val instanceof pms) {
+        switch (true) {
+          case states.get(val) === FULFILLED:
+            resolve(values.get(val));
+            break;
+          case states.get(val) === REJECTED:
+            reject(values.get(val));
+            break;
+          default:
+            val.then(resolve, reject);
+        }
+      } else if ( // eslint-disable-line no-cond-assign
         val &&
         (typeof val === 'object' || typeof val === 'function') &&
         typeof (then = val.then) === 'function'
       ) {
-        switch (true) {
-          case states.get(val) === constants.FULFILLED:
-            resolve(values.get(val));
-            break;
-          case states.get(val) === constants.REJECTED:
-            reject(values.get(val));
-            break;
-          default:
-            then.bind(val)(resolve, reject);
+        try {
+          then.bind(val)(resolve, reject);
+        } catch (err) {
+          reject(err);
         }
       } else {
-        states.set(this, constants.FULFILLED);
+        states.set(this, FULFILLED);
         values.set(this, val);
 
         setTimeout(() => {
@@ -93,7 +97,7 @@ class pms {
         }
       };
 
-      if (states.get(this) === constants.PENDING) {
+      if (states.get(this) === PENDING) {
         callbacks.get(this).success.push(() =>
             handle(onFulfilled, defaultOnFulfilled));
 
@@ -101,11 +105,11 @@ class pms {
             handle(onRejected, defaultOnRejected));
       }
 
-      if (states.get(this) === constants.FULFILLED) {
+      if (states.get(this) === FULFILLED) {
         setTimeout(() => handle(onFulfilled, defaultOnFulfilled));
       }
 
-      if (states.get(this) === constants.REJECTED) {
+      if (states.get(this) === REJECTED) {
         setTimeout(() => handle(onRejected, defaultOnRejected));
       }
     });
