@@ -90,7 +90,9 @@ class pms {
           });
         }
       } catch (err) {
-        reject(err);
+        if (!settled.get(val)) {
+          reject(err);
+        }
       }
     };
 
