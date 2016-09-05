@@ -46,37 +46,37 @@ class pms {
         throw new TypeError('Nope');
       }
 
-      let then;
+      let then = null;
 
-      if (val instanceof pms) {
-        switch (true) {
-          case states.get(val) === FULFILLED:
-            resolve(values.get(val));
-            break;
-          case states.get(val) === REJECTED:
-            reject(values.get(val));
-            break;
-          default:
-            val.then(resolve, reject);
-        }
-      } else if ( // eslint-disable-line no-cond-assign
-        val &&
-        (typeof val === 'object' || typeof val === 'function') &&
-        typeof (then = val.then) === 'function'
-      ) {
-        try {
+      try {
+        if (val instanceof pms) {
+          switch (true) {
+            case states.get(val) === FULFILLED:
+              resolve(values.get(val));
+              break;
+            case states.get(val) === REJECTED:
+              reject(values.get(val));
+              break;
+            default:
+              val.then(resolve, reject);
+          }
+        } else if ( // eslint-disable-line no-cond-assign
+          val &&
+          (typeof val === 'object' || typeof val === 'function') &&
+          typeof (then = val.then) === 'function'
+        ) {
           then.bind(val)(resolve, reject);
-        } catch (err) {
-          reject(err);
-        }
-      } else {
-        states.set(this, FULFILLED);
-        values.set(this, val);
+        } else {
+          states.set(this, FULFILLED);
+          values.set(this, val);
 
-        setTimeout(() => {
-          callbacks.get(this).success.forEach(cb => cb(val));
-          callbacks.delete(this);
-        });
+          setTimeout(() => {
+            callbacks.get(this).success.forEach(cb => cb(val));
+            callbacks.delete(this);
+          });
+        }
+      } catch (err) {
+        reject(err);
       }
     };
 
