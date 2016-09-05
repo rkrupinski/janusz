@@ -51,8 +51,9 @@ class pms {
       let then;
 
       if ( // eslint-disable-line no-cond-assign
+        val &&
         (typeof val === 'object' || typeof val === 'function') &&
-            typeof (then = val.then) === 'function'
+        typeof (then = val.then) === 'function'
       ) {
         switch (true) {
           case states.get(val) === constants.FULFILLED:
