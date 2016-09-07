@@ -22,6 +22,16 @@ function settle(cb, thenable) {
   };
 }
 
+function getThen(val) {
+  if (val && (typeof val === 'object' || typeof val === 'function')) {
+    const then = val.then;
+
+    return typeof then === 'function' ? then : null;
+  }
+
+  return null;
+}
+
 class pms {
 
   constructor(executor) { // eslint-disable-line consistent-return
@@ -59,7 +69,7 @@ class pms {
         throw new TypeError('Nope');
       }
 
-      let then = null;
+      let then;
 
       try {
         if (val instanceof pms) {
@@ -73,11 +83,7 @@ class pms {
             default:
               val.then(resolve, reject);
           }
-        } else if ( // eslint-disable-line no-cond-assign
-          val &&
-          (typeof val === 'object' || typeof val === 'function') &&
-          typeof (then = val.then) === 'function'
-        ) {
+        } else if (then = getThen(val)) { // eslint-disable-line no-cond-assign
           settled.delete(val);
           then.bind(val)(settle(resolve, val), settle(reject, val));
         } else {
