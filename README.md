@@ -1,13 +1,13 @@
-# pms
+# Janusz
 
 Yet another [Promises/A+](https://github.com/promises-aplus/promises-spec) implementation. Yay!
 
-[![Build Status](https://travis-ci.org/rkrupinski/pms.png?branch=master)](https://travis-ci.org/rkrupinski/pms)
+[![Build Status](https://travis-ci.org/rkrupinski/janusz.png?branch=master)](https://travis-ci.org/rkrupinski/janusz)
 
 ```javascript
-const defer = pms.deferred();
+const defer = janusz.deferred();
 
-pms.resolve({
+janusz.resolve({
   then(onFulfilled) {
     onFulfilled(defer.promise);
   },

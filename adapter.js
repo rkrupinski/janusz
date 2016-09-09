@@ -1,7 +1,7 @@
-const pms = require('.');
+const janusz = require('.');
 
-exports.resolved = pms.resolve;
+exports.resolved = janusz.resolve;
 
-exports.rejected = pms.reject;
+exports.rejected = janusz.reject;
 
-exports.deferred = pms.deferred;
+exports.deferred = janusz.deferred;

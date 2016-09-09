@@ -1,12 +1,18 @@
 {
-  "name": "pms",
-  "version": "0.0.1",
-  "description": "",
+  "name": "janusz",
+  "version": "0.0.0",
+  "description": "Yet another Promises/A+ implementation. Yay!",
+  "engines": {
+    "node" : ">=6.5.0"
+  },
   "scripts": {
     "test": "promises-aplus-tests adapter.js",
     "lint": "eslint ./*.js"
   },
-  "keywords": [],
+  "keywords": [
+    "promise",
+    "promises"
+  ],
   "author": "Rafał Krupiński",
   "license": "MIT",
   "devDependencies": {

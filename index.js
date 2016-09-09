@@ -10,6 +10,16 @@ const settled = new WeakMap();
 const defaultOnFulfilled = val => val;
 const defaultOnRejected = reason => { throw reason; };
 
+let schedule = setTimeout;
+
+try {
+  if (Object.prototype.toString.call(process) === '[object process]') {
+    schedule = process.nextTick;
+  }
+} catch (err) {
+  // Nope
+}
+
 function settle(cb, thenable) {
   return function wrapped(...args) {
     if (settled.get(thenable)) {
@@ -32,7 +42,7 @@ function getThen(val) {
   return null;
 }
 
-class pms {
+class janusz {
 
   constructor(executor) { // eslint-disable-line consistent-return
     if (typeof executor !== 'function') {
@@ -54,7 +64,7 @@ class pms {
       states.set(this, REJECTED);
       values.set(this, reason);
 
-      setTimeout(() => {
+      schedule(() => {
         callbacks.get(this).error.forEach(cb => cb(reason));
         callbacks.delete(this);
       });
@@ -72,7 +82,7 @@ class pms {
       let then;
 
       try {
-        if (val instanceof pms) {
+        if (val instanceof janusz) {
           switch (true) {
             case states.get(val) === FULFILLED:
               resolve(values.get(val));
@@ -90,7 +100,7 @@ class pms {
           states.set(this, FULFILLED);
           values.set(this, val);
 
-          setTimeout(() => {
+          schedule(() => {
             callbacks.get(this).success.forEach(cb => cb(val));
             callbacks.delete(this);
           });
@@ -105,12 +115,12 @@ class pms {
     try {
       executor(resolve, reject);
     } catch (err) {
-      return pms.reject(err);
+      return janusz.reject(err);
     }
   }
 
   then(onFulfilled, onRejected) {
-    return new pms((resolve, reject) => {
+    return new janusz((resolve, reject) => {
       const handle = (cb, fallback) => {
         try {
           resolve((typeof cb === 'function' ? cb : fallback)(values.get(this)));
@@ -128,11 +138,11 @@ class pms {
       }
 
       if (states.get(this) === FULFILLED) {
-        setTimeout(() => handle(onFulfilled, defaultOnFulfilled));
+        schedule(() => handle(onFulfilled, defaultOnFulfilled));
       }
 
       if (states.get(this) === REJECTED) {
-        setTimeout(() => handle(onRejected, defaultOnRejected));
+        schedule(() => handle(onRejected, defaultOnRejected));
       }
     });
   }
@@ -142,17 +152,17 @@ class pms {
   }
 
   static resolve(val) {
-    return val instanceof pms ? val : new pms(resolve => resolve(val));
+    return val instanceof janusz ? val : new janusz(resolve => resolve(val));
   }
 
   static reject(reason) {
-    return new pms((resolve, reject) => reject(reason));
+    return new janusz((resolve, reject) => reject(reason));
   }
 
   static deferred() {
     const defer = {};
 
-    defer.promise = new pms((resolve, reject) => {
+    defer.promise = new janusz((resolve, reject) => {
       defer.resolve = resolve;
       defer.reject = reject;
     });
@@ -162,4 +172,4 @@ class pms {
 
 }
 
-module.exports = pms;
+module.exports = janusz;
