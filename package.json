@@ -1,9 +1,9 @@
 {
   "name": "janusz",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Yet another Promises/A+ implementation. Yay!",
   "engines": {
-    "node" : ">=6.5.0"
+    "node": ">=6.5.0"
   },
   "scripts": {
     "test": "promises-aplus-tests adapter.js",
